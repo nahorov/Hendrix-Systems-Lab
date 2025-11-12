@@ -26,14 +26,6 @@ generated directly from these scripts with no manual edits.
 | Matplotlib | ≥ 3.8 |
 | soundfile | ≥ 0.12 |
 
-Install the Python stack with:
-
-```bash
-pip install -r requirements.txt
-````
-
-(`requirements.txt` should list the packages above with pinned versions.)
-
 ---
 
 ## 📁 Contents
@@ -149,7 +141,7 @@ Released under the **MIT License** unless stated otherwise.
 
 If you use this material in research or teaching, please cite:
 
-> [Your Name], “Hendrix, Systems Engineer: Rebuilding a Guitar Hero’s Signal Chain with SPICE,” GitHub repository, 2025.
+> [Rohan Puranik], “Hendrix, Systems Engineer: Rebuilding a Guitar Hero’s Signal Chain with SPICE,” GitHub repository, 2025.
 > DOI: *(Zenodo DOI if minted)*
 
 ---
