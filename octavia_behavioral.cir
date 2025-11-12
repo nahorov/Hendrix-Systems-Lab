@@ -1,0 +1,25 @@
+* =====================================================================
+* Octavia (behavioral, editor-friendly)
+* always shows: input sine, full-wave rectified, shaped out
+* =====================================================================
+
+V1 IN 0 SIN(0 1 440)            ; 1 Vpk at 440 Hz
+
+* full-wave rectifier in one line
+BRECT RECT 0 V='abs(V(IN))'
+
+* simple shaper / gain, a bit Hendrix-y
+BOUT OUT 0 V='limit(2*V(RECT) - 0.2, -1.5, 1.5)'
+
+RLOAD OUT 0 100k
+
+.tran 0.01ms 20ms
+
+.control
+run
+wrdata out/data/octavia.dat time v(IN) v(RECT) v(OUT)
+quit
+.endc
+
+.end
+

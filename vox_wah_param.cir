@@ -1,0 +1,26 @@
+* Vox-style inductor wah, AC sweep with parametric treadle
+
+* ---- Input & load ----
+Vsig IN 0 AC 1
+Rsrc IN INsrc 10k
+Rload OUT 0 500k
+
+* ---- Wah core ----
+* Default treadle position (overridden by alterparam for per-position runs)
+.param W=0.5
+
+Lfas INsrc LNODE 0.5H
+Rind LNODE LN2 47
+Cnet LN2 0 10n
+
+* 100k treadle pot split at wiper W (0..1)
+Rtop LN2 WIPER {100k*W}
+Rbot WIPER 0  {100k*(1-W)}
+
+* Unity buffer to isolate output node
+Ebuf OUT 0 WIPER 0 1
+
+* ---- Analyses ----
+.ac dec 200 20 20000
+.end
+

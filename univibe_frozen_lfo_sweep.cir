@@ -1,0 +1,76 @@
+* =====================================================================
+* Uni-Vibe (Frozen LFO) — Parameter Sweep Helper
+* ---------------------------------------------------------------------
+* What this file does:
+*   - Loads your main Uni-Vibe snapshot deck:   univibe_frozen_lfo.cir
+*   - Iterates Rstage over a list of “lamp positions” (frozen LFO states)
+*   - For each Rstage value, runs an AC analysis and writes a separate
+*     WRDATA file containing: frequency, real(v(out)), imag(v(out))
+*
+* Why separate files?
+*   - Your plotting stack (wr_collapse.py, merge_bode.py) expects one
+*     curve per file. This helper produces clean, per-position files.
+*
+* Output files created (you can change the list below):
+*   out/data/vibe_R6k.dat
+*   out/data/vibe_R12k.dat
+*   out/data/vibe_R22k.dat
+*   out/data/vibe_R33k.dat
+*   out/data/vibe_R47k.dat
+*   out/data/vibe_R68k.dat
+*
+* You can then overlay them with:
+*   python3 merge_bode.py \
+*     --out-mag out/figs/vibe_positions_mag.svg \
+*     --out-phase out/figs/vibe_positions_phase.svg \
+*     --title "Uni-Vibe — Magnitude" \
+*     --fcol frequency --recol "real(v(out))" --imcol "imag(v(out))" \
+*     out/data/vibe_R6k.dat:"6k"   \
+*     out/data/vibe_R12k.dat:"12k" \
+*     out/data/vibe_R22k.dat:"22k" \
+*     out/data/vibe_R33k.dat:"33k" \
+*     out/data/vibe_R47k.dat:"47k" \
+*     out/data/vibe_R68k.dat:"68k"
+*
+* Assumptions:
+*   - univibe_frozen_lfo.cir defines .param Rstage and includes an .ac.
+*   - Node OUT exists and is the thing you want to measure.
+* =====================================================================
+
+.control
+  * Don’t prompt on quit in batch mode.
+  set noaskquit
+
+  * Make WRDATA headers easy to parse by your Python tools.
+  set filetype=ascii
+
+  * Load the main Uni-Vibe snapshot deck (contains the circuit + .ac card).
+  source univibe_frozen_lfo.cir
+
+  * Create output dir in case Makefile didn’t already.
+  shell mkdir -p out/data
+
+  * Sweep list — adjust these to taste (they represent frozen LFO positions).
+  * Lower Rstage ≈ “lamp bright” (more phase rotation higher in band).
+  foreach RVAL 6k 12k 22k 33k 47k 68k
+    echo === Uni-Vibe sweep: Rstage = $RVAL ===
+
+    * Update the parameter inside the already-sourced circuit.
+    alterparam Rstage $RVAL
+
+    * Run ONLY the AC analysis (don’t call 'run' to avoid any .tran, etc.).
+    * (Your univibe_frozen_lfo.cir already has an .ac card; invoking 'ac'
+    *  here re-runs it with the altered parameter.)
+    reset
+    ac
+
+    * Write a WRDATA with the exact columns your plotting expects.
+    * NOTE: $RVAL is substituted into the filename by ngspice.
+    wrdata out/data/vibe_R$RVAL.dat  frequency real(v(out)) imag(v(out))
+  end
+
+  quit
+.endc
+
+.end
+

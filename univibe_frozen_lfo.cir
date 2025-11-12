@@ -1,0 +1,61 @@
+* =====================================================================
+* Uni-Vibe (frozen LFO) — 4-stage all-pass phase network
+* Goal: Provide an AC transfer to node OUT for plotting magnitude/phase.
+* Your Makefile driver does:
+*   source univibe_frozen_lfo.cir
+*   run
+*   wrdata out/data/vibe_ac.dat frequency real(v(out)) imag(v(out))
+* So: this deck must include an .ac analysis and define node OUT.
+* =====================================================================
+
+************* PARAMETERS (tweak these to "freeze" the lamp state) *****
+.param Rstage = 33k          ; effective LDR resistance at one LFO instant
+.param Cstage = 0.22u        ; stage capacitor (typical Uni-Vibe clones vary)
+.param Rin    = 100k         ; input bias / loading
+.param Rmix   = 100k         ; mix resistor into output summer
+.param Rfb    = 470k         ; small bleed from dry to shape depth (static here)
+.param Rbuf   = 1e6          ; buffer input impedance (with VCVS)
+.param Rload  = 100k         ; output load
+
+************* SOURCE & INPUT BUFFER **********************************
+Vin IN 0 AC 1            ; small-signal AC=1 V for transfer function
+Rsrc IN INn 1e3          ; ~1k pickup source impedance (optional)
+Rinb INn 0 {Rin}         ; bias/leak for the input node
+
+* Ideal unity-gain buffer to isolate the phase network from source.
+Ebuf BUF 0 INn 0 1
+Rbufsink INn 0 {Rbuf}    ; keeps INn numerically happy (even without Ebuf)
+
+************* 4 × ALL-PASS STAGES (frozen-LFO snapshot) **************
+* Each stage: series R, shunt C to ground, cascading 4 times.
+
+* Stage 1
+R1 BUF N1 {Rstage}
+C1 N1  0  {Cstage}
+
+* Stage 2
+R2 N1  N2 {Rstage}
+C2 N2  0  {Cstage}
+
+* Stage 3
+R3 N2  N3 {Rstage}
+C3 N3  0  {Cstage}
+
+* Stage 4
+R4 N3  N4 {Rstage}
+C4 N4  0  {Cstage}
+
+************* MIX / OUTPUT SUMMER ************************************
+* Mix the shifted path with a small dry/feedback path to form OUT.
+Rmix1 N4 OUT {Rmix}      ; phased path into OUT
+Rfbld BUF OUT {Rfb}      ; tiny dry bleed (frozen "depth")
+Rload OUT 0 {Rload}
+
+************* ANALYSIS ************************************************
+* AC sweep: decade sweep 20 Hz → 20 kHz, 200 points/decade
+.ac dec 200 20 20k
+.save v(out) v(in) v(buf) v(n1) v(n2) v(n3) v(n4)
+
+* Driver calls “run” externally; keep deck self-contained.
+.end
+

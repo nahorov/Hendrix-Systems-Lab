@@ -1,0 +1,24 @@
+* =====================================================================
+* Octavia — behavioral, ngspice-44 brace version
+* =====================================================================
+
+* 440 Hz input, 1 Vpk
+V1 IN 0 SIN(0 1 440)
+
+* full-wave rectifier (MUST use braces here)
+BRECT RECT 0 V = { abs(V(IN)) }
+
+* simple shaping / gain, also with braces
+BOUT OUT 0 V = { limit( 2*V(RECT) - 0.2, -1.2, 1.2 ) }
+
+RLOAD OUT 0 100k
+
+.tran 0.01ms 20ms
+
+.control
+run
+wrdata out/data/octavia.dat time v(IN) v(RECT) v(OUT)
+quit
+.endc
+
+.end

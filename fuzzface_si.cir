@@ -1,0 +1,62 @@
+* ======================================================================
+* Fuzz Face — Silicon NPN (negative ground)
+* Targets (matching your Makefile's wrdata lines):
+*   AC:  frequency, v(in), i(vsig)
+*   TRAN: time, v(out), v(b1), v(c2)
+*
+* Names exposed on purpose:
+*   Source: VSIG
+*   Nodes : IN, OUT, B1, C2   (so your wrdata expressions work verbatim)
+* ======================================================================
+
+************* SUPPLY ***************************************************
+VCC 9V 0 9           ; +9 V battery
+
+************* SOURCE / PICKUP *****************************************
+.param VINrms = 0.15                 ; 150 mVrms guitar-ish
+.param VIN    = { VINrms*sqrt(2) }   ; peak amplitude (~0.212 V)
+VSIG IN 0 SIN(0 {VIN} 440) AC 1      ; AC=1 for small-signal; SIN for tran
+Rsrc IN IN1 6k                        ; pickup source Z
+Cin  IN1 B1 10u                       ; input coupling cap into B1
+
+************* FUZZ FACE CORE ******************************************
+* Q1 pre-gain / bias
+Q1 C1 B1 0 QNPN
+Rc1 9V C1 33k
+Re1 0  E1 100                 ; small emitter resistor (stability)
+Rb1 9V B1 470k
+Rb2 B1 0  470k
+
+* Interstage to Q2
+Ccou C1 B2 100n
+Rbleed B2 0 470k
+
+* Q2 gain/output
+Q2 C2 B2 0 QNPN
+Rc2 9V C2 8.2k
+Re2 0  E2 100
+Csh C2 0 100p                 ; tiny HF tamer (optional)
+
+* Output
+Cout C2 OUT 10u
+Rload OUT 0 100k
+
+************* TRANSISTOR MODEL (generic Si NPN) ***********************
+.model QNPN NPN (IS=1e-14 BF=200 VAF=100 CJE=8p CJC=5p TF=200p TR=200p)
+
+************* ANALYSES ************************************************
+.op
+
+* AC: drive is AC 1 at VSIG; read v(in) and i(vsig)
+.ac dec 200 20 20k
+.save v(in) i(vsig) v(out)
+
+* TRAN: waveshaping
+.tran 0.1ms 200ms 0 1us
+.save v(out) v(b1) v(c2) v(in)
+
+* Nice-to-have harmonic summary at 440 Hz (for article narration)
+.four 440 v(out)
+
+.end
+
