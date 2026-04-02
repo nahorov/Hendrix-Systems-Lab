@@ -2,8 +2,8 @@
 
 This repository contains the Python, ngspice, and Makefile sources used to
 generate all figures and data for the article  
-**“Hendrix, Systems Engineer: Rebuilding a Guitar Hero’s Signal Chain with SPICE”**  
-(submitted to *IEEE Spectrum*, 2025).
+[Jimi Hendrix, Systems Engineer: His Iconic Sound Came from Precise Modulation and Feedback](https://doi.org/10.1109/MSPEC.2026.11427086),
+published in *IEEE Spectrum*, 63(3):16-18, March 2026.
 
 It reconstructs the analog signal path used by **Jimi Hendrix (1966–1970)**
 as a cascade of nonlinear stages—Fuzz Face, Octavia, Wah, Uni-Vibe, and Marshall stack—
